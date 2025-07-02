@@ -2,6 +2,7 @@ package com.example.loansandsavings
 
 import android.os.Bundle
 import android.util.EventLogTags
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -57,30 +58,39 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @Composable
-fun HomeScreen(navController: NavController){
-   Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
-       horizontalAlignment = Alignment.CenterHorizontally) {
+fun HomeScreen(navController: NavController) {
+    Column(
+        modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-       OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
-           navController.navigate("issue_loans")
-       }) {
-           Text("Issue Loans")
-       }
+        OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
+            navController.navigate("issue_loans")
+        }) {
+            Text("Issue Loans")
+        }
 
-       OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = { navController.navigate("view_loans")}) {
-           Text("View Loans")
-       }
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { navController.navigate("view_loans") }) {
+            Text("View Loans")
+        }
 
 
-       OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {navController.navigate("update_savings")}) {
-           Text("Update Savings")
-       }
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { navController.navigate("update_savings") }) {
+            Text("Update Savings")
+        }
 
-       OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {navController.navigate("view_savings")}) {
-           Text("View Savings")
-       }
-   }
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { navController.navigate("view_savings") }) {
+            Text("View Savings")
+        }
+    }
 }
 
 @Composable
@@ -93,16 +103,17 @@ fun LoansIssueScreen() {
     val db = Room.databaseBuilder(context, AppDatabase::class.java, "app_database").build()
     val dao = db.loansDao()
 
-    Scaffold(modifier = Modifier.fillMaxSize()) {
-        padding->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(16.dp)) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = names,
-                onValueChange = {names = it},
+                onValueChange = { names = it },
                 label = { Text("Names") }
             )
 
@@ -110,19 +121,24 @@ fun LoansIssueScreen() {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = amount.toString(),
-                onValueChange = {amount = it.toDoubleOrNull() ?: 500.0},
+                onValueChange = { amount = it.toDoubleOrNull() ?: 500.0 },
                 label = { Text("Amount") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
             Button(onClick = {
-                if(names.isNotBlank() && amount > 0){
+                if (names.isNotBlank() && amount > 0) {
                     coroutineScope.launch {
-                        val loan = Loan(names = names,
+                        val loan = Loan(
+                            names = names,
                             amount = amount.toFloat(),
                             date = System.currentTimeMillis()
                         )
                         dao.save(loan)
+                        Log.d("LOANS_DATA", "Count: ${dao.count()}")
+                        dao.fetch().forEach{
+                            Log.d("LOANS_DATA", "LoansIssueScreen: ${it.names} ${it.amount}")
+                        }
                         names = ""
                         amount = 500.0
                     }
@@ -144,18 +160,18 @@ fun DisplayLoansScreen() {
     var loansList by remember { mutableStateOf(emptyList<Loan>()) }
 
     val context = LocalContext.current
-    val db = Room.databaseBuilder(context, AppDatabase::class.java, "loans_database").build()
+    val db = Room.databaseBuilder(context, AppDatabase::class.java, "app_database").build()
     val dao = db.loansDao()
 
     val coroutine = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         loansList = dao.fetch()
+        Log.d("LOANS_DATA", "DisplayLoansScreen: $loansList")
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()){
-        padding->
-        LazyColumn (
+    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 12.dp)
@@ -181,7 +197,7 @@ fun DisplayLoansScreen() {
             }
         }
     }
-    }
+}
 
 
 @Composable
@@ -195,38 +211,41 @@ fun EnterSavingsScreen() {
     val dao = db.savingDao()
 
 
-    Scaffold(modifier = Modifier.fillMaxSize()) {
-            padding->
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(16.dp)) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
 
 
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = amount.toString(),
-                onValueChange = {amount = it.toDoubleOrNull() ?: 100.0},
+                onValueChange = { amount = it.toDoubleOrNull() ?: 100.0 },
                 label = { Text("Amount") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
             )
 
-            OutlinedTextField(modifier = Modifier.fillMaxWidth(),
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
                 value = description,
-                onValueChange = {description = it},
-                label = {Text("Description")})
+                onValueChange = { description = it },
+                label = { Text("Description") })
 
 
             Button(onClick = {
-                if( amount > 0 && description.isNotBlank()){
+                if (amount > 0 && description.isNotBlank()) {
                     coroutineScope.launch {
                         val save = Saving(
                             amount = amount.toFloat(),
                             date = System.currentTimeMillis(),
-                           description = description
+                            description = description
                         )
                         dao.insertSaving(save)
-                        amount = 100.0
+                        amount = 0.0
+                        description=""
                     }
                 }
             }) { Text("Add Savings") }
@@ -253,12 +272,11 @@ fun DisplaySavingsScreen() {
     val coroutine = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        savingList = dao.getAllSavings() as List<Saving>
+        savingList = dao.getAllSavings()
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()){
-            padding->
-        LazyColumn (
+    Scaffold(modifier = Modifier.fillMaxSize()) { padding ->
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 12.dp)
@@ -270,8 +288,10 @@ fun DisplaySavingsScreen() {
                         fontSize = 15.sp
                     )
                     Text("${convertDate(saving.date)}", fontSize = 15.sp)
-                    Text("Description: ${saving.description}",
-                        fontSize = 14.sp)
+                    Text(
+                        "Description: ${saving.description}",
+                        fontSize = 14.sp
+                    )
                 }
                 HorizontalDivider()
             }
@@ -279,10 +299,10 @@ fun DisplaySavingsScreen() {
     }
 }
 
- fun convertDate(date: Long):String{
-                val d = Date(date)
-                val f = SimpleDateFormat("E dd-MM-yyyy H:m a")
-                return f.format(d)
+fun convertDate(date: Long): String {
+    val d = Date(date)
+    val f = SimpleDateFormat("E dd-MM-yyyy H:m a")
+    return f.format(d)
 }
 
 

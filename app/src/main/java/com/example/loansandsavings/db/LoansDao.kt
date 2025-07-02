@@ -15,6 +15,9 @@ interface LoansDao {
     @Query("SELECT * FROM loans ORDER BY date DESC")
     suspend fun fetch(): List<Loan>
 
+    @Query("SELECT COUNT(*) FROM loans")
+    suspend fun count(): Int
+
     @Query("DELETE FROM loans WHERE id = :id")
     suspend fun deleteLoan(id: Int)
 

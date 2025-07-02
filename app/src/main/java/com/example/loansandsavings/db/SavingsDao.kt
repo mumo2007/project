@@ -11,6 +11,6 @@ interface SavingsDao {
     suspend fun insertSaving(saving: Saving)
 
     @Query("SELECT * FROM savings ORDER BY id DESC")
-    fun getAllSavings(): Flow<List<Saving>>
+    suspend fun getAllSavings(): List<Saving>
 
 }
